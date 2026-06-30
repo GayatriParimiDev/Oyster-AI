@@ -1,0 +1,189 @@
+/* ═══════════════════════════════════════════════════════
+   DATA SOURCES VIEW
+   ═══════════════════════════════════════════════════════ */
+
+.datasources {
+  height: 100%;
+}
+
+.ds-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+
+.ds-tabs {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.ds-tab {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  border: var(--border-card);
+  color: var(--sage-600);
+  background: var(--cream-50);
+  transition: all 0.2s ease;
+}
+
+.ds-tab:hover {
+  background: var(--mint-200);
+}
+
+.ds-tab--active {
+  background: var(--olive-200);
+  color: var(--sage-900);
+  border-color: var(--olive-300);
+}
+
+.ds-add-btn {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 8px 20px;
+  border: var(--border-card);
+  border-radius: var(--radius-md);
+  color: var(--sage-700);
+  background: var(--cream-50);
+  transition: all 0.2s ease;
+}
+
+.ds-add-btn:hover {
+  background: var(--mint-200);
+}
+
+/* ── Card Grid ── */
+.ds-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+
+.ds-card {
+  background: var(--cream-50);
+  border: var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ds-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.ds-card--degraded {
+  border-color: rgba(196, 75, 63, 0.3);
+  border-left: 3px solid var(--alert-red);
+}
+
+.ds-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: var(--border-light);
+}
+
+.ds-card-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.ds-card-icon {
+  font-size: 1rem;
+}
+
+.ds-card-title {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--sage-800);
+  letter-spacing: 0.3px;
+}
+
+/* ── Status Badge ── */
+.ds-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.ds-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.ds-status--syncing {
+  background: rgba(160, 168, 69, 0.12);
+  color: var(--status-syncing);
+}
+
+.ds-status--syncing .ds-status-dot {
+  background: var(--status-syncing);
+  animation: pulse 2s infinite;
+}
+
+.ds-status--healthy {
+  background: rgba(107, 154, 58, 0.12);
+  color: var(--status-healthy);
+}
+
+.ds-status--healthy .ds-status-dot {
+  background: var(--status-healthy);
+}
+
+.ds-status--degraded {
+  background: rgba(196, 75, 63, 0.12);
+  color: var(--status-degraded);
+}
+
+.ds-status--degraded .ds-status-dot {
+  background: var(--status-degraded);
+  animation: pulse 1.5s infinite;
+}
+
+/* ── Metrics ── */
+.ds-card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.ds-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ds-metric-label {
+  font-size: 0.75rem;
+  color: var(--sage-500);
+  font-weight: 500;
+}
+
+.ds-metric-value {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--sage-800);
+}
+
+.ds-metric-value--alert {
+  color: var(--alert-red);
+}
