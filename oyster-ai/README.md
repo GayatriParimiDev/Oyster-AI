@@ -29,41 +29,12 @@ The application is built on a master-detail SPA architecture, utilizing **React*
 
 The system is organized into six distinct interactive views, each designed for high-density information display:
 
-### 1. Enterprise Landing Page
-An editorial-quality marketing front-page showing enterprise trust indicators, feature cards, and interactive high-level metrics designed to engage operators.
-<p align="center">
-  <img src="public/screenshots/3.png" alt="Oyster AI Landing Page" width="85%" style="border-radius: 8px; border: 1px solid var(--border-light);" />
-</p>
-
-### 2. Operations Dashboard
-The primary landing hub for operators. It displays real-time performance summaries, an active data pipeline tracker, and critical telemetry streams in a balanced 2x2 grid.
-<p align="center">
-  <img src="public/screenshots/5.png" alt="Oyster AI Operations Dashboard" width="85%" style="border-radius: 8px; border: 1px solid var(--border-light);" />
-</p>
-
-### 3. Data Source Connectors
-Management panel for local and cloud data sources (PostgreSQL, AWS S3, Stripe API). Features connection state indicator dots (syncing, healthy, degraded) and data schema records.
-<p align="center">
-  <img src="public/screenshots/1.png" alt="Oyster AI Data Sources" width="85%" style="border-radius: 8px; border: 1px solid var(--border-light);" />
-</p>
-
-### 4. Workflow DAG Builder
-An interactive, canvas-style workflow designer. Operators can construct complex execution DAGs (Directed Acyclic Graphs) using data inputs, ML models, filter operators, and notification actions.
-<p align="center">
-  <img src="public/screenshots/4.png" alt="Oyster AI Workflow Builder" width="85%" style="border-radius: 8px; border: 1px solid var(--border-light);" />
-</p>
-
-### 5. Performance & Hardware Analytics
-Deep hardware instrumentation panel tracking GPU utilization, Tensor Core activity, and PCIe bus latency using an interactive heatmap matrix.
-<p align="center">
-  <img src="public/screenshots/2.png" alt="Oyster AI Performance Analytics" width="85%" style="border-radius: 8px; border: 1px solid var(--border-light);" />
-</p>
-
-### 6. System Alerts & Severity Logs
-High-density log stream with severity-based filtering (Critical, Warning, Info) and real-time alerts showing hardware and API rate limit notifications.
-<p align="center">
-  <img src="public/screenshots/screen.png" alt="Oyster AI System Alerts" width="85%" style="border-radius: 8px; border: 1px solid var(--border-light);" />
-</p>
+*   **1. Enterprise Landing Page**: An editorial-quality marketing front-page showing enterprise trust indicators, feature cards, and interactive high-level metrics designed to engage operators.
+*   **2. Operations Dashboard**: The primary landing hub for operators. It displays real-time performance summaries, an active data pipeline tracker, and critical telemetry streams in a balanced 2x2 grid.
+*   **3. Data Source Connectors**: Management panel for local and cloud data sources (PostgreSQL, AWS S3, Stripe API). Features connection state indicator dots (syncing, healthy, degraded) and data schema records.
+*   **4. Workflow DAG Builder**: An interactive, canvas-style workflow designer. Operators can construct complex execution DAGs (Directed Acyclic Graphs) using data inputs, ML models, filter operators, and notification actions.
+*   **5. Performance & Hardware Analytics**: Deep hardware instrumentation panel tracking GPU utilization, Tensor Core activity, and PCIe bus latency using an interactive heatmap matrix.
+*   **6. System Alerts & Severity Logs**: High-density log stream with severity-based filtering (Critical, Warning, Info) and real-time alerts showing hardware and API rate limit notifications.
 
 ---
 
