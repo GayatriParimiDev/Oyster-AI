@@ -12,6 +12,45 @@ const fadeUp = {
   }),
 }
 
+const techStack = [
+  {
+    name: 'NVIDIA CUDA',
+    desc: 'Parallel computing platform enabling GPU-accelerated inference with up to 14x speedup over traditional CPU-bound pipelines.',
+    icon: '⚡',
+    tag: 'GPU Computing',
+  },
+  {
+    name: 'TensorRT',
+    desc: 'High-performance deep learning inference optimizer and runtime that delivers low-latency, high-throughput model deployment.',
+    icon: '🧠',
+    tag: 'Inference Engine',
+  },
+  {
+    name: 'NVIDIA Triton',
+    desc: 'Open-source inference serving software that standardizes AI model deployment at scale across GPU and CPU clusters.',
+    icon: '🔺',
+    tag: 'Model Serving',
+  },
+  {
+    name: 'NeMo Framework',
+    desc: 'Scalable generative AI framework for building, customizing, and deploying large language models with enterprise guardrails.',
+    icon: '🌊',
+    tag: 'LLM Framework',
+  },
+  {
+    name: 'RAPIDS cuDF',
+    desc: 'GPU-accelerated DataFrame library that processes billions of rows in seconds, dramatically reducing ETL pipeline latency.',
+    icon: '📊',
+    tag: 'Data Processing',
+  },
+  {
+    name: 'InfiniBand Fabric',
+    desc: 'Ultra-low-latency interconnect enabling sub-microsecond node-to-node communication across distributed GPU clusters.',
+    icon: '🔗',
+    tag: 'Networking',
+  },
+]
+
 export default function LandingPage() {
   const navigate = useNavigate()
 
@@ -31,8 +70,11 @@ export default function LandingPage() {
           <a href="#technology">Technology</a>
           <a href="#partners">Partners</a>
         </nav>
-        <button className="landing-login" onClick={() => navigate('/app/dashboard')}>
-          Login
+        <button
+          className="landing-cta-enter"
+          onClick={() => navigate('/app/dashboard')}
+        >
+          Enter Dashboard →
         </button>
       </header>
 
@@ -190,6 +232,81 @@ export default function LandingPage() {
             </motion.div>
           ))}
         </div>
+      </section>
+
+      {/* ── Technology Section ── */}
+      <section className="landing-technology" id="technology">
+        <motion.div
+          className="tech-header"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-80px' }}
+          variants={fadeUp}
+        >
+          <h2 className="tech-title">Powered by NVIDIA</h2>
+          <p className="tech-subtitle">
+            Enterprise-grade AI infrastructure built on NVIDIA's full-stack accelerated computing platform,
+            delivering unprecedented performance for real-time decision intelligence.
+          </p>
+        </motion.div>
+
+        <div className="tech-grid">
+          {techStack.map((tech, i) => (
+            <motion.div
+              className="tech-card"
+              key={tech.name}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-40px' }}
+              custom={i}
+              variants={fadeUp}
+            >
+              <div className="tech-card-top">
+                <span className="tech-card-icon">{tech.icon}</span>
+                <span className="tech-card-tag">{tech.tag}</span>
+              </div>
+              <h3 className="tech-card-name">{tech.name}</h3>
+              <p className="tech-card-desc">{tech.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          className="tech-architecture"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-60px' }}
+          variants={fadeUp}
+        >
+          <div className="tech-arch-card">
+            <h3 className="tech-arch-title">System Architecture</h3>
+            <div className="tech-arch-flow">
+              <div className="tech-arch-node">
+                <span className="tech-arch-icon">📥</span>
+                <span className="tech-arch-label">Data Ingestion</span>
+                <span className="tech-arch-sub">PostgreSQL, S3, REST APIs</span>
+              </div>
+              <div className="tech-arch-connector">→</div>
+              <div className="tech-arch-node">
+                <span className="tech-arch-icon">⚡</span>
+                <span className="tech-arch-label">GPU Processing</span>
+                <span className="tech-arch-sub">CUDA + RAPIDS cuDF</span>
+              </div>
+              <div className="tech-arch-connector">→</div>
+              <div className="tech-arch-node">
+                <span className="tech-arch-icon">🧠</span>
+                <span className="tech-arch-label">AI Inference</span>
+                <span className="tech-arch-sub">TensorRT + Triton</span>
+              </div>
+              <div className="tech-arch-connector">→</div>
+              <div className="tech-arch-node">
+                <span className="tech-arch-icon">📊</span>
+                <span className="tech-arch-label">Real-time Insights</span>
+                <span className="tech-arch-sub">Dashboard Telemetry</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* ── Trust / Partners ── */}

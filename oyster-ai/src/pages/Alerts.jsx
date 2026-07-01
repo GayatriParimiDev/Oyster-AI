@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { alertsData } from '../data/mockData'
-import { motion } from 'framer-motion'
+import { useState, useMemo } from 'react'
+import { useAlerts } from '../context/AlertContext'
+import { motion, AnimatePresence } from 'framer-motion'
 import './Alerts.css'
 
 const severityIcons = {
@@ -16,8 +16,76 @@ const severityColors = {
 }
 
 export default function Alerts() {
+  const { alerts, acknowledgeAlert, acknowledgeAll } = useAlerts()
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [page, setPage] = useState(1)
+  const [showFilters, setShowFilters] = useState(false)
+  const [severityFilter, setSeverityFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Filter logs based on severity, read status, and search query
+  const filteredLogs = useMemo(() => {
+    return alerts.logs.filter((log) => {
+      // Severity Filter
+      if (severityFilter !== 'all' && log.severity !== severityFilter) {
+        return false
+      }
+      // Status Filter
+      if (statusFilter === 'unread' && log.acknowledged) {
+        return false
+      }
+      if (statusFilter === 'read' && !log.acknowledged) {
+        return false
+      }
+      // Search Query Filter
+      if (
+        searchQuery &&
+        !log.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !log.desc.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !log.node.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
+        return false
+      }
+      return true
+    })
+  }, [alerts.logs, severityFilter, statusFilter, searchQuery])
+
+  // Pagination Settings
+  const PAGE_SIZE = 5
+  const totalFiltered = filteredLogs.length
+  const totalPages = Math.ceil(totalFiltered / PAGE_SIZE) || 1
+  const currentPage = Math.min(page, totalPages)
+
+  const paginatedLogs = useMemo(() => {
+    return filteredLogs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  }, [filteredLogs, currentPage, PAGE_SIZE])
+
+  // Export logs to a JSON file
+  const handleExport = () => {
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(filteredLogs, null, 2))
+    const downloadAnchor = document.createElement('a')
+    downloadAnchor.setAttribute('href', dataStr)
+    downloadAnchor.setAttribute('download', `oyster_alerts_export_${severityFilter}_${statusFilter}.json`)
+    document.body.appendChild(downloadAnchor)
+    downloadAnchor.click()
+    downloadAnchor.remove()
+  }
+
+  const handleResetFilters = () => {
+    setSeverityFilter('all')
+    setStatusFilter('all')
+    setSearchQuery('')
+    setPage(1)
+  }
+
+  const handlePrevPage = () => {
+    setPage((prev) => Math.max(1, prev - 1))
+  }
+
+  const handleNextPage = () => {
+    setPage((prev) => Math.min(totalPages, prev + 1))
+  }
 
   return (
     <div className="alerts-page">
@@ -28,14 +96,71 @@ export default function Alerts() {
           <p className="alerts-subtitle">Real-time monitoring and anomaly detection logs.</p>
         </div>
         <div className="alerts-header-actions">
-          <button className="alerts-filter-btn">
-            <span>⚙</span> Filter
+          <button className="alerts-ack-all-btn" onClick={acknowledgeAll}>
+            <span>✓</span> Acknowledge All
           </button>
-          <button className="alerts-export-btn">
+          <button
+            className={`alerts-filter-btn ${showFilters || severityFilter !== 'all' || statusFilter !== 'all' || searchQuery ? 'active' : ''}`}
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <span>⚙</span> Filter {showFilters ? '▲' : '▼'}
+          </button>
+          <button className="alerts-export-btn" onClick={handleExport} title="Export current results as JSON">
             <span>↓</span> Export
           </button>
         </div>
       </div>
+
+      {/* ── Filter Bar ── */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            className="alerts-filter-bar"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="filter-bar-inner">
+              <div className="filter-group filter-search">
+                <label>Search Text:</label>
+                <input
+                  type="text"
+                  placeholder="Search logs, nodes..."
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                />
+              </div>
+              <div className="filter-group">
+                <label>Severity:</label>
+                <select
+                  value={severityFilter}
+                  onChange={(e) => { setSeverityFilter(e.target.value); setPage(1); }}
+                >
+                  <option value="all">All Severities</option>
+                  <option value="critical">🔴 Critical Only</option>
+                  <option value="warning">🟡 Warning Only</option>
+                  <option value="info">🟢 Info Only</option>
+                </select>
+              </div>
+              <div className="filter-group">
+                <label>Status:</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="unread">📩 Unread (Active)</option>
+                  <option value="read">📖 Read (Acknowledged)</option>
+                </select>
+              </div>
+              <button className="alerts-reset-filters-btn" onClick={handleResetFilters}>
+                Reset Filters
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="alerts-layout">
         {/* ── Left Summary ── */}
@@ -51,9 +176,9 @@ export default function Alerts() {
               <span className="alert-severity-label alert-severity--critical">
                 <span className="alert-severity-icon">⊘</span> CRITICAL
               </span>
-              <span className="alert-summary-count">{alertsData.critical.count}</span>
+              <span className="alert-summary-count">{alerts.critical.count}</span>
             </div>
-            <p className="alert-summary-desc">{alertsData.critical.desc}</p>
+            <p className="alert-summary-desc">{alerts.critical.desc}</p>
           </motion.div>
 
           {/* Warning */}
@@ -67,9 +192,9 @@ export default function Alerts() {
               <span className="alert-severity-label alert-severity--warning">
                 <span className="alert-severity-icon">△</span> WARNING
               </span>
-              <span className="alert-summary-count">{alertsData.warning.count}</span>
+              <span className="alert-summary-count">{alerts.warning.count}</span>
             </div>
-            <p className="alert-summary-desc">{alertsData.warning.desc}</p>
+            <p className="alert-summary-desc">{alerts.warning.desc}</p>
           </motion.div>
 
           {/* System Health */}
@@ -81,11 +206,11 @@ export default function Alerts() {
           >
             <h4 className="alert-health-label">System Health</h4>
             <div className="alert-health-value">
-              <span className="alert-health-num">{alertsData.systemHealth.value}</span>
+              <span className="alert-health-num">{alerts.systemHealth.value}</span>
               <span className="alert-health-unit">%</span>
             </div>
             <div className="alert-health-bars">
-              {alertsData.systemHealth.bars.map((h, i) => (
+              {alerts.systemHealth.bars.map((h, i) => (
                 <motion.div
                   key={i}
                   className="alert-health-bar"
@@ -101,7 +226,12 @@ export default function Alerts() {
         {/* ── Right Log Stream ── */}
         <div className="alerts-log">
           <div className="alerts-log-header">
-            <h3 className="alerts-log-title">Alert Log</h3>
+            <h3 className="alerts-log-title">
+              Alert Log
+              {totalFiltered > 0 && (
+                <span className="alerts-log-count"> ({totalFiltered} results)</span>
+              )}
+            </h3>
             <div className="alerts-log-controls">
               <label className="alerts-autorefresh">
                 <input
@@ -117,49 +247,83 @@ export default function Alerts() {
           </div>
 
           <div className="alerts-log-list">
-            {alertsData.logs.map((log, i) => (
-              <motion.div
-                key={log.id}
-                className={`alert-log-item alert-log-item--${log.severity}`}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.08 }}
-              >
-                <span
-                  className="alert-log-icon"
-                  style={{ color: severityColors[log.severity] }}
+            <AnimatePresence mode="popLayout">
+              {paginatedLogs.length === 0 ? (
+                <motion.div
+                  className="alerts-empty-state"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                 >
-                  {severityIcons[log.severity]}
-                </span>
-                <div className="alert-log-content">
-                  <div className="alert-log-top">
-                    <h4 className="alert-log-name">{log.title}</h4>
-                    <span className="alert-log-time">{log.time}</span>
-                  </div>
-                  <div className="alert-log-meta">
-                    <span className="alert-log-node">{log.node}</span>
-                    <p className="alert-log-desc">{log.desc}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                  <span className="alerts-empty-icon">✓</span>
+                  <h4>No matching alerts found</h4>
+                  <p>Try resetting the filters or modifying your search query.</p>
+                </motion.div>
+              ) : (
+                paginatedLogs.map((log, i) => (
+                  <motion.div
+                    key={log.id}
+                    className={`alert-log-item alert-log-item--${log.severity} ${log.acknowledged ? 'alert-log-item--acked' : ''}`}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <span
+                      className="alert-log-icon"
+                      style={{ color: severityColors[log.severity] }}
+                    >
+                      {severityIcons[log.severity]}
+                    </span>
+                    <div className="alert-log-content">
+                      <div className="alert-log-top">
+                        <h4 className="alert-log-name">{log.title}</h4>
+                        <div className="alert-log-actions">
+                          <span className="alert-log-time">{log.time}</span>
+                          {!log.acknowledged && (
+                            <button
+                              className="alert-ack-btn"
+                              onClick={() => acknowledgeAlert(log.id)}
+                              title="Mark as read"
+                            >
+                              ✓
+                            </button>
+                          )}
+                          {log.acknowledged && (
+                            <span className="alert-acked-badge">Read</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="alert-log-meta">
+                        <span className="alert-log-node">{log.node}</span>
+                        <p className="alert-log-desc">{log.desc}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="alerts-pagination">
             <span className="alerts-page-info">
-              Showing 1-4 of {alertsData.totalAlerts} alerts
+              Showing {totalFiltered > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0}-{Math.min(currentPage * PAGE_SIZE, totalFiltered)} of {totalFiltered} alerts
             </span>
             <div className="alerts-page-controls">
               <button
                 className="alerts-page-btn"
-                disabled={page === 1}
-                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={currentPage === 1}
+                onClick={handlePrevPage}
               >
                 ‹
               </button>
+              <span className="alerts-page-number">
+                Page {currentPage} of {totalPages}
+              </span>
               <button
                 className="alerts-page-btn"
-                onClick={() => setPage(page + 1)}
+                disabled={currentPage === totalPages}
+                onClick={handleNextPage}
               >
                 ›
               </button>

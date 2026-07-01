@@ -91,6 +91,72 @@
   --topbar-height: 64px;
 }
 
+/* ── Dark Theme Override ── */
+[data-theme='dark'] {
+  /* Sage / Olive palette (inverted for dark) */
+  --sage-900: #e8f0e4;
+  --sage-800: #d4dcd0;
+  --sage-700: #b3c3ad;
+  --sage-600: #96a790;
+  --sage-500: #7a8f74;
+  --sage-400: #5e6d58;
+  --sage-300: #4a5a44;
+  --sage-200: #3d4a3a;
+  --sage-100: #2e3a2c;
+
+  /* Cream / Warm darks */
+  --cream-50: #1a1e1a;
+  --cream-100: #22271f;
+  --cream-200: #2a3026;
+  --cream-300: #333a2e;
+
+  /* Mint / Canvas (dark) */
+  --mint-50: #151a14;
+  --mint-100: #1c221a;
+  --mint-200: #242c21;
+  --mint-300: #2d3829;
+
+  /* Olive / Khaki accent (keep vibrant) */
+  --olive-100: #3a3824;
+  --olive-200: #5a5630;
+  --olive-300: #7a7440;
+  --olive-400: #9a9450;
+  --olive-500: #b8b060;
+
+  /* Functional colors (kept high-contrast) */
+  --accent-lime: #a8c256;
+  --accent-lime-hover: #97b445;
+  --accent-green: #7ab84a;
+  --status-healthy: #7ab84a;
+  --status-syncing: #b8b860;
+  --status-degraded: #e05545;
+  --status-warning: #d4a040;
+  --alert-red: #e05545;
+  --alert-red-bg: #2a1a18;
+  --alert-yellow: #d4a040;
+  --alert-yellow-bg: #2a2418;
+  --info-green: #6aaa45;
+  --info-green-bg: #1a2a18;
+
+  /* Sidebar (keep dark but adjust) */
+  --sidebar-bg: #0f140e;
+  --sidebar-text: #96a790;
+  --sidebar-active: #a8c256;
+  --sidebar-active-bg: rgba(168, 194, 86, 0.15);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+
+  /* Shadows (more subtle in dark) */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-panel: 0 0 0 1px rgba(255, 255, 255, 0.06);
+
+  /* Borders (lighter in dark mode) */
+  --border-light: 1px solid rgba(255, 255, 255, 0.08);
+  --border-medium: 1px solid rgba(255, 255, 255, 0.12);
+  --border-card: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* ── Reset & Base ── */
 *,
 *::before,

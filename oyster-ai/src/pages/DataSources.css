@@ -40,6 +40,14 @@
   border-color: var(--olive-300);
 }
 
+.ds-tab-count {
+  margin-left: 6px;
+  background: rgba(42, 51, 40, 0.1);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+}
+
 .ds-add-btn {
   font-family: var(--font-mono);
   font-size: 0.78rem;

@@ -1,17 +1,17 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTheme } from '../context/ThemeContext'
+import { useAlerts } from '../context/AlertContext'
 import './AppLayout.css'
-
-const navItems = [
-  { path: '/app/dashboard', label: 'Dashboard', icon: 'grid' },
-  { path: '/app/data-sources', label: 'Data Sources', icon: 'database' },
-  { path: '/app/workflows', label: 'Workflows', icon: 'workflow' },
-  { path: '/app/alerts', label: 'Alerts', icon: 'bell', badge: 12 },
-  { path: '/app/performance', label: 'Performance', icon: 'chart' },
-]
 
 const NavIcon = ({ type }) => {
   const icons = {
+    home: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M3 10l7-7 7 7" />
+        <path d="M5 8v8a1 1 0 001 1h3v-5h2v5h3a1 1 0 001-1V8" />
+      </svg>
+    ),
     grid: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="2" y="2" width="7" height="7" rx="1.5" />
@@ -47,6 +47,17 @@ const NavIcon = ({ type }) => {
         <path d="M2 18h16" />
       </svg>
     ),
+    sun: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <circle cx="12" cy="12" r="5" />
+        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+      </svg>
+    ),
+    moon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+    ),
   }
   return icons[type] || null
 }
@@ -59,9 +70,20 @@ const pageLabels = {
   '/app/performance': 'Performance Analytics',
 }
 
-export default function AppLayout({ onDeploy }) {
+export default function AppLayout({ onDeploy, onSettings, onNewReport }) {
   const location = useLocation()
+  const navigate = useNavigate()
   const pageTitle = pageLabels[location.pathname] || ''
+  const { theme, toggleTheme } = useTheme()
+  const { unacknowledgedCount } = useAlerts()
+
+  const navItems = [
+    { path: '/app/dashboard', label: 'Dashboard', icon: 'grid' },
+    { path: '/app/data-sources', label: 'Data Sources', icon: 'database' },
+    { path: '/app/workflows', label: 'Workflows', icon: 'workflow' },
+    { path: '/app/alerts', label: 'Alerts', icon: 'bell', badge: unacknowledgedCount },
+    { path: '/app/performance', label: 'Performance', icon: 'chart' },
+  ]
 
   return (
     <div className="app-layout">
@@ -82,6 +104,19 @@ export default function AppLayout({ onDeploy }) {
         </div>
 
         <nav className="sidebar-nav">
+          {/* Back to Landing */}
+          <button
+            className="sidebar-link sidebar-back-btn"
+            onClick={() => navigate('/')}
+          >
+            <span className="sidebar-link-icon">
+              <NavIcon type="home" />
+            </span>
+            <span className="sidebar-link-label">Landing Page</span>
+          </button>
+
+          <div className="sidebar-nav-divider" />
+
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -94,7 +129,7 @@ export default function AppLayout({ onDeploy }) {
                 <NavIcon type={item.icon} />
               </span>
               <span className="sidebar-link-label">{item.label}</span>
-              {item.badge && (
+              {item.badge > 0 && (
                 <span className="sidebar-badge">{item.badge}</span>
               )}
             </NavLink>
@@ -110,19 +145,15 @@ export default function AppLayout({ onDeploy }) {
             Deploy Model
           </button>
 
-          <div className="sidebar-user">
-            <div className="sidebar-avatar">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="15" fill="var(--sage-600)" stroke="var(--sage-400)" strokeWidth="1" />
-                <circle cx="16" cy="12" r="5" fill="var(--sage-300)" />
-                <path d="M6 28c0-5.5 4.5-10 10-10s10 4.5 10 10" fill="var(--sage-300)" />
-              </svg>
-            </div>
-            <div className="sidebar-user-info">
-              <span className="sidebar-user-name">Admin User</span>
-              <span className="sidebar-user-role">SysOps</span>
-            </div>
-          </div>
+          {/* Theme Toggle */}
+          <button className="sidebar-theme-toggle" onClick={toggleTheme}>
+            <span className="sidebar-theme-icon">
+              <NavIcon type={theme === 'light' ? 'moon' : 'sun'} />
+            </span>
+            <span className="sidebar-theme-label">
+              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            </span>
+          </button>
         </div>
       </aside>
 
@@ -143,35 +174,31 @@ export default function AppLayout({ onDeploy }) {
             </div>
           </div>
           <div className="topbar-right">
-            <button className="topbar-icon-btn" title="Help">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="10" cy="10" r="8" />
-                <path d="M7 7.5a3 3 0 0 1 5.5 1.5c0 2-3 2.5-3 2.5" />
-                <circle cx="10" cy="14.5" r="0.5" fill="currentColor" />
-              </svg>
-            </button>
-            <button className="topbar-icon-btn" title="Apps">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                <circle cx="4" cy="4" r="1.5" />
-                <circle cx="10" cy="4" r="1.5" />
-                <circle cx="16" cy="4" r="1.5" />
-                <circle cx="4" cy="10" r="1.5" />
-                <circle cx="10" cy="10" r="1.5" />
-                <circle cx="16" cy="10" r="1.5" />
-                <circle cx="4" cy="16" r="1.5" />
-                <circle cx="10" cy="16" r="1.5" />
-                <circle cx="16" cy="16" r="1.5" />
-              </svg>
-            </button>
-            <span className="topbar-settings">Settings</span>
-            <button className="topbar-new-report">+ New Report</button>
-            <div className="topbar-avatar">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="15" fill="var(--sage-200)" stroke="var(--sage-300)" strokeWidth="1" />
-                <circle cx="16" cy="12" r="5" fill="var(--sage-400)" />
-                <path d="M6 28c0-5.5 4.5-10 10-10s10 4.5 10 10" fill="var(--sage-400)" />
-              </svg>
+            <div className="topbar-help-wrapper">
+              <button className="topbar-icon-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="10" cy="10" r="8" />
+                  <path d="M7 7.5a3 3 0 0 1 5.5 1.5c0 2-3 2.5-3 2.5" />
+                  <circle cx="10" cy="14.5" r="0.5" fill="currentColor" />
+                </svg>
+              </button>
+              <div className="topbar-help-tooltip">
+                <h4>Oyster Quick Help</h4>
+                <p>Monitor real-time AI and GPU telemetry across clusters.</p>
+                <ul>
+                  <li><strong>Dashboard</strong>: Telemetry overview</li>
+                  <li><strong>Data Sources</strong>: Register databases & storage</li>
+                  <li><strong>Workflows</strong>: Build pipelines by clicking operators</li>
+                  <li><strong>Alerts</strong>: View & resolve system warnings</li>
+                </ul>
+                <div className="tooltip-footer">System Status: Optimal (42ms)</div>
+              </div>
             </div>
+            <button className="topbar-icon-btn" title="Toggle Theme" onClick={toggleTheme}>
+              <NavIcon type={theme === 'light' ? 'moon' : 'sun'} />
+            </button>
+            <button className="topbar-settings" onClick={onSettings}>⚙ Settings</button>
+            <button className="topbar-new-report" onClick={onNewReport}>+ New Report</button>
           </div>
         </header>
 

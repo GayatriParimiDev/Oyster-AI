@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { performanceData } from '../data/mockData'
+import { useState, useMemo } from 'react'
 import {
   AreaChart,
   Area,
@@ -14,8 +13,77 @@ import './Performance.css'
 
 const timeRanges = ['1H', '24H', '7D']
 
+function generateChartData(range) {
+  const count = range === '1H' ? 12 : range === '24H' ? 24 : 30
+  const seed = range === '1H' ? 1 : range === '24H' ? 2 : 3
+
+  return Array.from({ length: count }, (_, i) => {
+    let time
+    if (range === '1H') {
+      time = `${String(i * 5).padStart(2, '0')}m`
+    } else if (range === '24H') {
+      time = `${String(i).padStart(2, '0')}:00`
+    } else {
+      const d = new Date()
+      d.setDate(d.getDate() - (count - 1 - i))
+      time = `${d.getMonth() + 1}/${d.getDate()}`
+    }
+
+    const base = 20 + seed * 5
+    const coreLoad = Math.min(100, Math.max(5, base + Math.sin(i / (3 + seed)) * 25 + (Math.sin(i * seed * 0.7) * 15)))
+    const vram = Math.min(100, Math.max(5, base - 5 + Math.sin(i / (4 + seed) + 1) * 20 + (Math.cos(i * seed * 0.5) * 10)))
+
+    return { time, coreLoad: Math.round(coreLoad * 10) / 10, vram: Math.round(vram * 10) / 10 }
+  })
+}
+
+function generateMetrics(range) {
+  const rangeMultiplier = range === '1H' ? 1 : range === '24H' ? 0.95 : 0.88
+  return {
+    gpuUtilization: {
+      value: Math.round(87.4 * rangeMultiplier * 10) / 10,
+      trend: range === '1H' ? '+2.1% from last hour' : range === '24H' ? '+5.8% from yesterday' : '+12.3% from last week',
+    },
+    tensorCores: {
+      value: range === '1H' ? '14,392' : range === '24H' ? '13,847' : '12,103',
+      trend: range === '1H' ? 'Steady capacity' : range === '24H' ? '+3.2% daily average' : '+8.1% weekly average',
+    },
+    acceleration: {
+      value: range === '1H' ? '14.2' : range === '24H' ? '13.8' : '12.6',
+      unit: 'x',
+      desc: 'Faster than legacy CPUs',
+    },
+  }
+}
+
+function generateLatency(range) {
+  const base = range === '1H' ? 0 : range === '24H' ? 3 : 6
+  return [
+    [12 + base, 18 + base, 22 + base, 35, 42],
+    [15 + base, 10, 28 + base, 20, 38],
+    [22, 15, 12 + base, 25, 30 + base],
+    [30, 22 + base, 18, 14 + base, 28],
+    [40, 32, 25 + base, 20, 15 + base],
+  ]
+}
+
+function generateNodes(range) {
+  const temps = range === '1H' ? ['68°C', '72°C', '65°C'] : range === '24H' ? ['71°C', '75°C', '67°C'] : ['74°C', '78°C', '70°C']
+  const powers = range === '1H' ? ['320W', '680W', '290W'] : range === '24H' ? ['340W', '700W', '310W'] : ['360W', '720W', '330W']
+  return [
+    { id: 'N-01-A100', arch: 'NVIDIA Ampere', temp: temps[0], power: powers[0], status: 'Active' },
+    { id: 'N-02-H100', arch: 'NVIDIA Hopper', temp: temps[1], power: powers[1], status: 'Active' },
+    { id: 'N-03-A100', arch: 'NVIDIA Ampere', temp: temps[2], power: powers[2], status: range === '7D' ? 'Active' : 'Standby' },
+  ]
+}
+
 export default function Performance() {
   const [activeRange, setActiveRange] = useState('1H')
+
+  const chartData = useMemo(() => generateChartData(activeRange), [activeRange])
+  const metrics = useMemo(() => generateMetrics(activeRange), [activeRange])
+  const pcieLatency = useMemo(() => generateLatency(activeRange), [activeRange])
+  const nodes = useMemo(() => generateNodes(activeRange), [activeRange])
 
   const getLatencyColor = (val) => {
     if (val <= 20) return 'var(--sage-700)'
@@ -52,6 +120,7 @@ export default function Performance() {
       <div className="perf-metrics-row">
         <motion.div
           className="perf-metric-card"
+          key={`gpu-${activeRange}`}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
@@ -61,16 +130,17 @@ export default function Performance() {
             <span className="perf-mc-icon">⊕</span>
           </div>
           <span className="perf-mc-value">
-            {performanceData.gpuUtilization.value}
+            {metrics.gpuUtilization.value}
             <span className="perf-mc-unit">%</span>
           </span>
           <span className="perf-mc-trend perf-mc-trend--up">
-            ↗ {performanceData.gpuUtilization.trend}
+            ↗ {metrics.gpuUtilization.trend}
           </span>
         </motion.div>
 
         <motion.div
           className="perf-metric-card"
+          key={`tensor-${activeRange}`}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -79,12 +149,13 @@ export default function Performance() {
             <span className="perf-mc-label">Active Tensor Cores</span>
             <span className="perf-mc-icon">⊞</span>
           </div>
-          <span className="perf-mc-value">{performanceData.tensorCores.value}</span>
-          <span className="perf-mc-trend">— {performanceData.tensorCores.trend}</span>
+          <span className="perf-mc-value">{metrics.tensorCores.value}</span>
+          <span className="perf-mc-trend">— {metrics.tensorCores.trend}</span>
         </motion.div>
 
         <motion.div
           className="perf-metric-card perf-metric-card--accent"
+          key={`accel-${activeRange}`}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
@@ -92,10 +163,10 @@ export default function Performance() {
           <span className="perf-mc-label-light">Acceleration Alpha</span>
           <div className="perf-mc-accel">
             <span className="perf-mc-accel-value">
-              {performanceData.acceleration.value}
-              <span className="perf-mc-accel-x">{performanceData.acceleration.unit}</span>
+              {metrics.acceleration.value}
+              <span className="perf-mc-accel-x">{metrics.acceleration.unit}</span>
             </span>
-            <span className="perf-mc-accel-desc">{performanceData.acceleration.desc}</span>
+            <span className="perf-mc-accel-desc">{metrics.acceleration.desc}</span>
           </div>
           <div className="perf-mc-accel-blocks">
             <div className="perf-accel-block perf-accel-block--dark" />
@@ -109,13 +180,14 @@ export default function Performance() {
         {/* Area Chart */}
         <motion.div
           className="perf-chart-card"
+          key={`chart-${activeRange}`}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
           <div className="perf-chart-header">
             <span className="perf-chart-title">
-              ✦ VRAM Allocation vs Core Utilization
+              ✦ VRAM Allocation vs Core Utilization ({activeRange})
             </span>
             <div className="perf-chart-legend">
               <span className="perf-legend-item">
@@ -129,7 +201,7 @@ export default function Performance() {
             </div>
           </div>
           <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={performanceData.chartData}>
+            <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="coreFill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--sage-500)" stopOpacity={0.3} />
@@ -185,6 +257,7 @@ export default function Performance() {
         {/* PCIe Latency Matrix */}
         <motion.div
           className="perf-latency-card"
+          key={`latency-${activeRange}`}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
@@ -201,7 +274,7 @@ export default function Performance() {
                 <span key={n} className="perf-matrix-col">{n}</span>
               ))}
             </div>
-            {performanceData.pcieLatency.map((row, ri) => (
+            {pcieLatency.map((row, ri) => (
               <div className="perf-matrix-row" key={ri}>
                 <span className="perf-matrix-row-label">N-{String(ri + 1).padStart(2, '0')}</span>
                 {row.map((val, ci) => (
@@ -226,6 +299,7 @@ export default function Performance() {
       {/* ── Nodes Table ── */}
       <motion.div
         className="perf-nodes-card"
+        key={`nodes-${activeRange}`}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -245,7 +319,7 @@ export default function Performance() {
             </tr>
           </thead>
           <tbody>
-            {performanceData.nodes.map((node) => (
+            {nodes.map((node) => (
               <tr key={node.id}>
                 <td className="perf-node-id">{node.id}</td>
                 <td>{node.arch}</td>

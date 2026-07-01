@@ -1,14 +1,21 @@
 import { useState } from 'react'
 import { dataSourcesData } from '../data/mockData'
 import { motion, AnimatePresence } from 'framer-motion'
+import AddSourceModal from '../components/AddSourceModal'
 import './DataSources.css'
 
 const tabs = ['All Sources', 'Active', 'Failing']
 
 export default function DataSources() {
   const [activeTab, setActiveTab] = useState('All Sources')
+  const [sources, setSources] = useState(dataSourcesData)
+  const [showAddSource, setShowAddSource] = useState(false)
 
-  const filtered = dataSourcesData.filter((ds) => {
+  const handleAddSource = (newSource) => {
+    setSources((prev) => [...prev, newSource])
+  }
+
+  const filtered = sources.filter((ds) => {
     if (activeTab === 'Active') return ds.status === 'syncing' || ds.status === 'healthy'
     if (activeTab === 'Failing') return ds.status === 'degraded'
     return true
@@ -25,10 +32,15 @@ export default function DataSources() {
               onClick={() => setActiveTab(tab)}
             >
               {tab}
+              {tab === 'All Sources' && (
+                <span className="ds-tab-count">{sources.length}</span>
+              )}
             </button>
           ))}
         </div>
-        <button className="ds-add-btn">+ Add Source</button>
+        <button className="ds-add-btn" onClick={() => setShowAddSource(true)}>
+          + Add Source
+        </button>
       </div>
 
       <div className="ds-grid">
@@ -69,6 +81,13 @@ export default function DataSources() {
           ))}
         </AnimatePresence>
       </div>
+
+      {showAddSource && (
+        <AddSourceModal
+          onClose={() => setShowAddSource(false)}
+          onAdd={handleAddSource}
+        />
+      )}
     </div>
   )
 }
